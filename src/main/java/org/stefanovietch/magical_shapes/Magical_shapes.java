@@ -5,8 +5,10 @@ import com.mojang.logging.LogUtils;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtIo;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
@@ -16,6 +18,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.storage.LevelResource;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -23,6 +26,7 @@ import net.minecraftforge.common.util.Lazy;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
+import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -34,9 +38,14 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
+import net.minecraftforge.server.ServerLifecycleHooks;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.stefanovietch.magical_shapes.menus.MainScreen;
+import org.stefanovietch.magical_shapes.menus.ProjectStorage;
+
+import java.io.File;
+import java.nio.file.Path;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod(Magical_shapes.MODID)
@@ -67,6 +76,36 @@ public class Magical_shapes {
             GLFW.GLFW_KEY_M, // Default key is M
             "key.categories.misc" // Mapping will be in the misc category
     ));
+
+    public static File getFile() {
+        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+        if (server == null) return null;
+
+        Path worldPath = server.getWorldPath(LevelResource.ROOT);
+        return worldPath.resolve("data/my_mod_projects.dat").toFile();
+    }
+
+    public static void save() {
+        try {
+            File file = getFile();
+            file.getParentFile().mkdirs();
+            CompoundTag tag = ProjectStorage.saveAll();
+            NbtIo.writeCompressed(tag, file);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void load() {
+        try {
+            File file = getFile();
+            if (file == null || !file.exists()) return;
+            CompoundTag tag = NbtIo.readCompressed(file);
+            ProjectStorage.loadAll(tag);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     // Creates a creative tab with the id "magical_shapes:example_tab" for the example item, that is placed after the combat tab
     public static final RegistryObject<CreativeModeTab> EXAMPLE_TAB = CREATIVE_MODE_TABS.register("example_tab", () -> CreativeModeTab.builder().withTabsBefore(CreativeModeTabs.COMBAT).icon(() -> EXAMPLE_ITEM.get().getDefaultInstance()).displayItems((parameters, output) -> {
@@ -117,6 +156,7 @@ public class Magical_shapes {
     @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event) {
         // Do something when the server starts
+        load();
         LOGGER.info("HELLO from server starting");
     }
 
@@ -141,8 +181,13 @@ public class Magical_shapes {
     public void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase == TickEvent.Phase.END) { // Only call code once as the tick event is called twice every tick
             while (EXAMPLE_MAPPING.get().consumeClick()) {
-                Minecraft.getInstance().setScreen(new MainScreen(Component.literal("Main Screen")));
+                Minecraft.getInstance().setScreen(new MainScreen());
             }
         }
+    }
+
+    @SubscribeEvent
+    public static void onServerStopping(ServerStoppingEvent event) {
+        save();
     }
 }

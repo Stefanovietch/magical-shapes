@@ -1,45 +1,48 @@
 package org.stefanovietch.magical_shapes.menus;
 
-
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.PlainTextButton;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.stefanovietch.magical_shapes.Magical_shapes;
 
-import static org.stefanovietch.magical_shapes.menus.ProjectStorage.PROJECTS;
+public class SpellDrawingScreen extends Screen {
+    SpellDrawing spellDrawing;
+    SpellProject currentProject;
+    EditBox editBox;
 
-public class MainScreen extends Screen {
-    PlainTextButton newProjectButton;
-
-    public MainScreen() {
-        super(Component.literal("Main Menu"));
+    public SpellDrawingScreen(SpellDrawing spellDrawing, SpellProject spellProject) {
+        super(Component.literal(spellDrawing.getName()));
+        this.spellDrawing = spellDrawing;
+        this.currentProject = spellProject;
     }
 
     @Override
     protected void init() {
         super.init();
+        assert this.minecraft != null;
         Magical_shapes.load();
+        // Add widgets and precomputed values
+        this.editBox = new EditBox(this.font, 20, 11, 150, 20, Component.literal("Name"));
+        this.editBox.setValue(this.spellDrawing.getName());
+        this.addRenderableWidget(this.editBox);
         this.addRenderableWidget(
-                Button.builder(Component.literal("Create Project"), b -> {
-                            SpellProject new_project = new SpellProject("");
-                            PROJECTS.add(new_project);
-                            this.minecraft.setScreen(new SpellProjectScreen(new_project));
+                Button.builder(Component.literal("Edit Drawings"), b -> {
+                            this.minecraft.setScreen(new AllDrawingsScreen(spellDrawing, currentProject));
                         })
-                        .bounds(20, 20, 120, 20) // x, y, width, height
+                        .bounds(20, 40, 100, 20) // x, y, width, height
                         .build()
         );
-        for (int i = 0; i < ProjectStorage.PROJECTS.size(); i++) {
-            SpellProject project = ProjectStorage.PROJECTS.get(i);
-            this.addRenderableWidget(
-                    Button.builder(Component.literal("Open Project: " + project.getName()), b -> {
-                                this.minecraft.setScreen(new SpellProjectScreen(project));
-                            })
-                            .bounds(20, 40 + i * 25, 120, 20) // x, y, width, height
-                            .build()
-            );
-        }
+
+        this.addRenderableWidget(
+                Button.builder(Component.literal("Back"), b -> {
+                            this.minecraft.setScreen(new SpellProjectScreen(currentProject));
+                        })
+                        .bounds(20, height - 30, 50, 20) // x, y, width, height
+                        .build()
+        );
     }
 
     @Override
@@ -47,6 +50,7 @@ public class MainScreen extends Screen {
         super.tick();
 
         // Add ticking logic for EditBox in editBox
+        this.editBox.tick();
     }
 
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
@@ -64,6 +68,7 @@ public class MainScreen extends Screen {
     @Override
     public void onClose() {
         // Stop any handlers here
+
         // Call last in case it interferes with the override
         super.onClose();
     }
@@ -71,6 +76,10 @@ public class MainScreen extends Screen {
     @Override
     public void removed() {
         // Reset initial states here
+        if (this.editBox != null) {
+            this.spellDrawing.setName(this.editBox.getValue());
+        }
+
         Magical_shapes.save();
         // Call last in case it interferes with the override
         super.removed();
