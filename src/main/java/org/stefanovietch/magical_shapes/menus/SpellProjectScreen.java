@@ -48,7 +48,7 @@ public class SpellProjectScreen extends Screen {
             );
         }
         Button train_button = Button.builder(Component.literal("Train"), b -> {
-                            this.model.train(50,32);
+                            this.model.train();
                         })
                         .bounds(200, height - 30, 50, 20) // x, y, width, height
                         .build();

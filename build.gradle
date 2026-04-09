@@ -4,7 +4,6 @@ plugins {
     id 'net.minecraftforge.gradle' version '[6.0.16,6.2)'
 }
 
-
 group = mod_group_id
 version = mod_version
 
@@ -140,9 +139,7 @@ dependencies {
     // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar
     // The group id is ignored when searching -- in this case, it is "blank"
     // implementation fg.deobf("blank:coolmod-${mc_version}:${coolmod_version}")
-    implementation "org.deeplearning4j:deeplearning4j-core:1.0.0-M2.1"
-    implementation "org.nd4j:nd4j-native-platform:1.0.0-M2.1"
-
+    implementation "com.github.haifengl:smile-core:3.1.0"
     // For more info:
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html

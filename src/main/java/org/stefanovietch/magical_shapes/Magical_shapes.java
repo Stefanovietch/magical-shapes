@@ -88,9 +88,11 @@ public class Magical_shapes {
     public static void save() {
         try {
             File file = getFile();
-            file.getParentFile().mkdirs();
-            CompoundTag tag = ProjectStorage.saveAll();
-            NbtIo.writeCompressed(tag, file);
+            if (file != null) {
+                file.getParentFile().mkdirs();
+                CompoundTag tag = ProjectStorage.saveAll();
+                NbtIo.writeCompressed(tag, file);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

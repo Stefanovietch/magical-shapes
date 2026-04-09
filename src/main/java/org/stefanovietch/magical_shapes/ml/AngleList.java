@@ -1,10 +1,9 @@
 package org.stefanovietch.magical_shapes.ml;
 
 import org.joml.Vector2f;
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -13,10 +12,10 @@ import static org.joml.SimplexNoise.noise;
 
 public class AngleList {
     private final List<Vector2f> angleList;
-    private Random rand;
+    private final Random rand = new Random();
 
     public AngleList(List<Vector2f> angles) {
-        this.angleList = angles;
+        this.angleList = new ArrayList<>(angles);
     }
 
     public AngleList randomStart() {
@@ -56,20 +55,18 @@ public class AngleList {
     }
 
     public AngleList copy() {
-        return new AngleList(this.angleList.stream()
-                .map(Vector2f::new)
-                .toList());
+        return new AngleList(new ArrayList<>(
+                this.angleList.stream().map(Vector2f::new).toList()
+        ));
     }
 
-    public INDArray toINDArray() {
-        int N = angleList.size(); // should be 200
-        INDArray array = Nd4j.create(1, N * 2); // flatten x,y coordinates
+    public double[] toDoubleArray() {
+        double[] arr = new double[angleList.size() * 2];
 
-        for (int i = 0; i < N; i++) {
-            Vector2f v = angleList.get(i);
-            array.putScalar(0, i * 2L, v.x);
-            array.putScalar(0, i * 2L + 1, v.y);
+        for (int i = 0; i < angleList.size(); i++) {
+            arr[i * 2] = angleList.get(i).x;
+            arr[i * 2 + 1] = angleList.get(i).y;
         }
-        return array;
+        return arr;
     }
 }
