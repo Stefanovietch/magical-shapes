@@ -9,9 +9,10 @@ import net.minecraft.network.chat.Component;
 import org.stefanovietch.magical_shapes.Magical_shapes;
 
 public class SpellDrawingScreen extends Screen {
-    SpellDrawing spellDrawing;
-    SpellProject currentProject;
-    EditBox editBox;
+    private final SpellDrawing spellDrawing;
+    private final SpellProject currentProject;
+    private EditBox nameEditor;
+
 
     public SpellDrawingScreen(SpellDrawing spellDrawing, SpellProject spellProject) {
         super(Component.literal(spellDrawing.getName()));
@@ -23,11 +24,10 @@ public class SpellDrawingScreen extends Screen {
     protected void init() {
         super.init();
         assert this.minecraft != null;
-        Magical_shapes.load();
         // Add widgets and precomputed values
-        this.editBox = new EditBox(this.font, 20, 11, 150, 20, Component.literal("Name"));
-        this.editBox.setValue(this.spellDrawing.getName());
-        this.addRenderableWidget(this.editBox);
+        this.nameEditor = new EditBox(this.font, 20, 11, 150, 20, Component.literal("Name"));
+        this.nameEditor.setValue(this.spellDrawing.getName());
+        this.addRenderableWidget(this.nameEditor);
         this.addRenderableWidget(
                 Button.builder(Component.literal("Edit Drawings"), b -> {
                             this.minecraft.setScreen(new AllDrawingsScreen(spellDrawing, currentProject));
@@ -50,7 +50,7 @@ public class SpellDrawingScreen extends Screen {
         super.tick();
 
         // Add ticking logic for EditBox in editBox
-        this.editBox.tick();
+        this.nameEditor.tick();
     }
 
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
@@ -76,8 +76,8 @@ public class SpellDrawingScreen extends Screen {
     @Override
     public void removed() {
         // Reset initial states here
-        if (this.editBox != null) {
-            this.spellDrawing.setName(this.editBox.getValue());
+        if (this.nameEditor != null) {
+            this.spellDrawing.setName(this.nameEditor.getValue());
         }
 
         Magical_shapes.save();

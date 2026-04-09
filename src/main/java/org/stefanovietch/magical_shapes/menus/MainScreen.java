@@ -20,7 +20,6 @@ public class MainScreen extends Screen {
     @Override
     protected void init() {
         super.init();
-        Magical_shapes.load();
         this.addRenderableWidget(
                 Button.builder(Component.literal("Create Project"), b -> {
                             SpellProject new_project = new SpellProject("");

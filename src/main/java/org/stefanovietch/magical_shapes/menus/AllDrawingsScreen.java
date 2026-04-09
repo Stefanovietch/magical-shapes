@@ -28,7 +28,6 @@ public class AllDrawingsScreen extends Screen {
     protected void init() {
         super.init();
         assert this.minecraft != null;
-        Magical_shapes.load();
         // Add widgets and precomputed values
         int y = 0;
         for (Drawing d : drawingsList) {

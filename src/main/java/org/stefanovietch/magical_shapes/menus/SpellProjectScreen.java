@@ -6,12 +6,14 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.stefanovietch.magical_shapes.Magical_shapes;
+import org.stefanovietch.magical_shapes.ml.Model;
 
 import static org.stefanovietch.magical_shapes.menus.ProjectStorage.PROJECTS;
 
 public class SpellProjectScreen extends Screen {
     private final SpellProject project;
     private EditBox nameEditor;
+    private Model model;
 
     public SpellProjectScreen(SpellProject project) {
         super(Component.literal(project.getName()));
@@ -45,11 +47,34 @@ public class SpellProjectScreen extends Screen {
                             .build()
             );
         }
+        Button train_button = Button.builder(Component.literal("Train"), b -> {
+                            this.model.train(50,32);
+                        })
+                        .bounds(200, height - 30, 50, 20) // x, y, width, height
+                        .build();
+        if (model == null ) {train_button.active = false;}
+        addRenderableWidget(train_button);
+
+        this.addRenderableWidget(
+                Button.builder(Component.literal("Create Model"), b -> {
+                            this.model = new Model(this.project);
+                        })
+                        .bounds(80, height - 30, 100, 20) // x, y, width, height
+                        .build()
+        );
         this.addRenderableWidget(
                 Button.builder(Component.literal("Back"), b -> {
                             this.minecraft.setScreen(new MainScreen());
                         })
                         .bounds(20, height - 30, 50, 20) // x, y, width, height
+                        .build()
+        );
+        this.addRenderableWidget(
+                Button.builder(Component.literal("Delete"), b -> {
+                            PROJECTS.remove(this.project);
+                            this.minecraft.setScreen(new MainScreen());
+                        })
+                        .bounds(width - 60, height - 30, 50, 20) // x, y, width, height
                         .build()
         );
     }

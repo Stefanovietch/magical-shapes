@@ -9,17 +9,32 @@ import java.util.List;
 public class SpellDrawing {
     private final List<Drawing> drawings = new ArrayList<>();
     private String name;
+    private int ID;
 
     public SpellDrawing(String name) {
         this.name = name;
+        this.ID = name.hashCode();
         for (int i = 0; i < 10; i++) {
             drawings.add(new Drawing());
         }
     }
 
-    public List<Drawing> getDrawings() { return drawings; }
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public List<Drawing> getDrawings() {
+        return drawings;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+        this.ID = name.hashCode();
+    }
+
+    public int getID() {
+        return ID;
+    }
 
     public Drawing getDrawing(int index) {
         return drawings.get(index); // 0..9
@@ -44,7 +59,7 @@ public class SpellDrawing {
         SpellDrawing spell = new SpellDrawing(tag.getString("Name"));
         ListTag list = tag.getList("Drawings", 10); // 10 = CompoundTag
 
-        spell.drawings.clear(); // clear default drawings
+        spell.drawings.clear();
         for (int i = 0; i < list.size(); i++) {
             spell.drawings.add(Drawing.load(list.getCompound(i)));
         }
