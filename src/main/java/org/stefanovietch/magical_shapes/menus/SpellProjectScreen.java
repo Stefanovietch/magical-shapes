@@ -48,7 +48,7 @@ public class SpellProjectScreen extends Screen {
             );
         }
         Button train_button = Button.builder(Component.literal("Train"), b -> {
-                            this.model.train();
+                            this.model.train(100);
                         })
                         .bounds(200, height - 30, 50, 20) // x, y, width, height
                         .build();
@@ -57,7 +57,7 @@ public class SpellProjectScreen extends Screen {
 
         this.addRenderableWidget(
                 Button.builder(Component.literal("Create Model"), b -> {
-                            this.model = new Model(this.project);
+                            this.model = new Model(this.project, 200);
                         })
                         .bounds(80, height - 30, 100, 20) // x, y, width, height
                         .build()

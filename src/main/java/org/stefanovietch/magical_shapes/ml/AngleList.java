@@ -60,13 +60,12 @@ public class AngleList {
         ));
     }
 
-    public double[] toDoubleArray() {
-        double[] arr = new double[angleList.size() * 2];
-
+    public Matrix toMatrix() {
+        Matrix m = new Matrix(1, angleList.size() * 2);
         for (int i = 0; i < angleList.size(); i++) {
-            arr[i * 2] = angleList.get(i).x;
-            arr[i * 2 + 1] = angleList.get(i).y;
+            m.data[0][i*2] = angleList.get(i).x;
+            m.data[0][i*2+1] = angleList.get(i).y;
         }
-        return arr;
+        return m;
     }
 }
