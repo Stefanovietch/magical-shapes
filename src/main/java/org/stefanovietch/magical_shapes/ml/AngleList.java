@@ -20,7 +20,7 @@ public class AngleList {
 
     public AngleList randomStart() {
         Collections.rotate(angleList, rand.nextInt(angleList.size()));
-        return this;
+        return this.startZero();
     }
 
     public AngleList addSmoothNoise(float scale, float amplitude) {
@@ -44,7 +44,7 @@ public class AngleList {
     }
 
     public AngleList randomScale() {
-        return scaleShape(rand.nextFloat(0.5f,2f));
+        return scaleShape(rand.nextFloat(0.8f,1.2f));
     }
 
     public AngleList extend() {
@@ -60,12 +60,17 @@ public class AngleList {
         ));
     }
 
-    public Matrix toMatrix() {
-        Matrix m = new Matrix(1, angleList.size() * 2);
-        for (int i = 0; i < angleList.size(); i++) {
-            m.data[0][i*2] = angleList.get(i).x;
-            m.data[0][i*2+1] = angleList.get(i).y;
+    public List<Vector2f> getAngleList() {
+        return angleList;
+    }
+
+    public AngleList startZero() {
+        float start_x = angleList.get(0).x;
+        float start_y = angleList.get(0).y;
+        for (Vector2f v : angleList) {
+            v.x -= start_x;
+            v.y -= start_y;
         }
-        return m;
+        return this;
     }
 }

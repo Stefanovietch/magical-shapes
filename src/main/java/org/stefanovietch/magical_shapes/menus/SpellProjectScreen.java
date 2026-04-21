@@ -1,19 +1,24 @@
 package org.stefanovietch.magical_shapes.menus;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.stefanovietch.magical_shapes.Magical_shapes;
 import org.stefanovietch.magical_shapes.ml.Model;
+import org.stefanovietch.magical_shapes.ml.Spline;
 
 import static org.stefanovietch.magical_shapes.menus.ProjectStorage.PROJECTS;
 
 public class SpellProjectScreen extends Screen {
     private final SpellProject project;
     private EditBox nameEditor;
-    private Model model;
+    private final Drawing drawing = new Drawing();
+    private StringWidget prediction;
+    private Button train_button;
 
     public SpellProjectScreen(SpellProject project) {
         super(Component.literal(project.getName()));
@@ -47,19 +52,40 @@ public class SpellProjectScreen extends Screen {
                             .build()
             );
         }
-        Button train_button = Button.builder(Component.literal("Train"), b -> {
-                            this.model.train(100);
+
+        prediction = new StringWidget(500, 50, Component.literal("Test"), Minecraft.getInstance().font);
+        drawing.setPosition(150, 50);
+
+        train_button = Button.builder(Component.literal("Train"), b -> {
+                    project.model.trainAsync(501, () -> {
+                                System.out.println("Training complete!");
+                                });
                         })
                         .bounds(200, height - 30, 50, 20) // x, y, width, height
                         .build();
-        if (model == null ) {train_button.active = false;}
+
+        if (project.model == null ) {
+            drawing.drawWidget.visible = false;
+            drawing.clearButton.visible = false;
+            prediction.visible = false;
+            train_button.active = false;
+        }
+
+        addRenderableWidget(drawing.drawWidget);
+        addRenderableWidget(drawing.clearButton);
+        addRenderableWidget(prediction);
         addRenderableWidget(train_button);
 
         this.addRenderableWidget(
-                Button.builder(Component.literal("Create Model"), b -> {
-                            this.model = new Model(this.project, 200);
+                Button.builder(Component.literal(project.model == null ? "Create Model" : "Remake Model"), b -> {
+                            this.project.model = new Model(this.project);
+                            this.project.model.build();
+                            drawing.drawWidget.visible = true;
+                            prediction.visible = true;
+                            train_button.active = true;
+                            drawing.clearButton.visible = true;
                         })
-                        .bounds(80, height - 30, 100, 20) // x, y, width, height
+                        .bounds(90, height - 30, 100, 20) // x, y, width, height
                         .build()
         );
         this.addRenderableWidget(
@@ -84,6 +110,11 @@ public class SpellProjectScreen extends Screen {
         super.tick();
         // Add ticking logic for EditBox in editBox
         this.nameEditor.tick();
+        if (project.model != null && drawing.length() > 10 && !project.model.isTraining) {
+            String p = this.project.model.predict(Spline.buildToMatrix(drawing.toAngleList().startZero().getAngleList(),100));
+            prediction.setMessage(Component.literal(p));
+        }
+
     }
 
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {

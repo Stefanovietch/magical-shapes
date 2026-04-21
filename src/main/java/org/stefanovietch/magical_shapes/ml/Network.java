@@ -4,37 +4,47 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Network {
-    private final List<Layer> layers = new ArrayList<>();
-    private final double learningRate;
+    private final List<LayerLike> layers = new ArrayList<>();
+    private double learningRate;
 
     public Network(double learningRate) {
         this.learningRate = learningRate;
     }
 
-    public void addLayer(Layer layer) { layers.add(layer); }
+    public void addLayer(LayerLike layer) { layers.add(layer); }
 
-    public Matrix forward(Matrix input) {
+    public List<LayerLike> getLayers() { return layers; }
+
+    public Matrix forward(Matrix input, boolean training) {
         Matrix output = input;
-        for (Layer layer : layers) output = layer.forward(output);
+        for (LayerLike layer : layers) output = layer.forward(output, training);
         return output;
     }
 
-    public void train(Matrix input, Matrix target) {
-        Matrix output = forward(input);
-
-        // Backprop
-        Matrix error = output.subtract(target); // dL/dOutput
+    public void backwards(Matrix input) {
+        Matrix output = input;
         for (int i = layers.size() - 1; i >= 0; i--) {
-            Layer layer = layers.get(i);
-            Matrix delta = error.multiply(layer.lastOutput.apply(layer.activationDerivative));
-            Matrix weightGrad = layer.lastInput.transpose().dot(delta);
-
-            // Update weights and biases
-            layer.weights = layer.weights.subtract(weightGrad.apply(v -> v * learningRate));
-            layer.biases  = layer.biases.subtract(delta.apply(v -> v * learningRate));
-
-            // Pass error to previous layer
-            error = delta.dot(layer.weights.transpose());
+            output = layers.get(i).backward(output, learningRate);
         }
+    }
+
+    public void train(Matrix input, Matrix target) {
+        Matrix output = forward(input, true);
+
+        Matrix error = output.subtract(target).scale(1.0 / input.rows);
+
+        backwards(error);
+    }
+
+    public void addDropout(double v) {
+        layers.add(new Dropout(v));
+    }
+
+    public Matrix forward(Matrix input) {
+        return forward(input, false);
+    }
+
+    public void reduceLearningRate(float x) {
+        this.learningRate *= x;
     }
 }

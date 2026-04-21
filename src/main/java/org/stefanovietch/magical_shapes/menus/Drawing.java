@@ -77,4 +77,5 @@ public class Drawing {
                 .map(p -> new Vector2f(p.x, p.y))
                 .toList());
     }
+
 }

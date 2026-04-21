@@ -35,7 +35,7 @@ public class DrawWidget extends AbstractWidget {
 
     @Override
     public boolean mouseDragged(double x, double y, int button, double dragX, double dragY) {
-        if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT && this.isFocused()) {
+        if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT && this.isFocused() && drawing.length() < 200) {
             int local_x = Mth.floor(x) - getX();
             int local_y = Mth.floor(y) - getY();
             if (0 < local_x && local_x < this.width && 0 < local_y && local_y < this.height) {

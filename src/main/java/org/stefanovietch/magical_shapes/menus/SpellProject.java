@@ -2,6 +2,7 @@ package org.stefanovietch.magical_shapes.menus;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import org.stefanovietch.magical_shapes.ml.Model;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.List;
 public class SpellProject {
     private final List<SpellDrawing> spellDrawings = new ArrayList<>();
     private String name;
+    public Model model;
 
     public SpellProject(String name) { this.name = name; }
 
@@ -31,6 +33,11 @@ public class SpellProject {
         }
 
         tag.put("Spells", spellList);
+
+        if (model != null && !model.isTraining) {
+            tag.put("Model", model.save());
+        }
+
         return tag;
     }
 
@@ -41,6 +48,10 @@ public class SpellProject {
 
         for (int i = 0; i < spellList.size(); i++) {
             project.spellDrawings.add(SpellDrawing.load(spellList.getCompound(i)));
+        }
+
+        if (tag.contains("Model")) {
+            project.model = Model.load(tag.getCompound("Model"), project);
         }
 
         return project;
